@@ -35,5 +35,12 @@ UserWithPrivileges :
 Waitlist :
 
 
-A Database is required according to the following guidelines. 4 tables. Trial, User_credentials, Booking, NextBookingID
+A Database is required according to the following guidelines. 4 tables. Trial, User_credentials, Confirmed, NextBookingID
+
+Trial should have following columns: Id, UserId, Date, StartTime, EndTime, RoomSize, Priority, ARC_PermissionReqd, CC_PermissionReqd, Details
+User_credentials has columns: Sno, Username, Password
+Confirmed has columns: Id, UserId, Date, StartTime, EndTime, RoomNo
+NextBookingId has two columns: SNo, Number
+
+Drivers reqd are in the lib folder. 
 		

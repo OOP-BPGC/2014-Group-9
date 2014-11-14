@@ -5,8 +5,6 @@ import java.util.*;
 
 //Author : Arnab
 
-//line 129,158 : BookingID inside Booking needs to be public or a public get method.
-//line 133,162 : Can't find reject permission methods in ModifyBookingInDatabase.
 
 public class TestProject
 {
@@ -88,8 +86,7 @@ public class TestProject
 				try {
 					details = new Details(s1, s3, s4, s5, Integer.parseInt(s6), user.getPrivilege(), s7);
 				
-					
-					int bookingID = Booking.numberOfNextBooking;
+					int bookingID = ModifyBookingsInDatabase.getNextBookingID();
 					
 					ModifyBookingsInDatabase.addToWaitlist(details, bookingID, projectorReqd);
 					
@@ -148,7 +145,7 @@ public class TestProject
 								System.out.println("\n1 : Permission granted");
 								break;
 							case 2 : 
-								//*********call reject permission
+								ModifyBookingsInDatabase.deleteFromWaitlist(booking.getBookingId());
 								System.out.println("\n1 : Permission rejected");
 								break;
 							default : validInput2 = false; System.out.println("Invalid. Enter 1 or 2.");
@@ -177,7 +174,7 @@ public class TestProject
 								System.out.println("\n1 : Permission granted");
 								break;
 							case 2 : 
-								//********call reject permission method
+								ModifyBookingsInDatabase.deleteFromWaitlist(booking.getBookingId());
 								System.out.println("\n1 : Permission rejected");
 								break;
 							default : validInput2 = false; System.out.println("Invalid. Enter 1 or 2.");
