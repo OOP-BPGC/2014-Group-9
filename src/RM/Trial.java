@@ -9,8 +9,9 @@ public class Trial {
 	    	
 	    //	Details details = new Details("2012b4a8519G", "2014-07-08", "18:00", "19:00", 2,1, "For CEL club");
 	    	//ModifyBookingsInDatabase.addToWaitlist(details, 8, true);
-	    	//ModifyBookingsInDatabase.deleteFromWaitlist("4");
-	    	Booking[] bookings = ModifyBookingsInDatabase.SearchFromWaitlist("Date", "2014-07-08");
+	    	ModifyBookingsInDatabase.deleteFromWaitlist("0");
+	//    	ModifyBookingsInDatabase.incrementNextBookingID();
+	    	//Booking[] bookings = ModifyBookingsInDatabase.SearchFromWaitlist("Date", "2014-07-08");
 	    	//if(bookings == null) System.out.println("No search");
 	  //  	System.out.println(bookings.length);
 	    //	System.out.println(bookings[0].details.toString());

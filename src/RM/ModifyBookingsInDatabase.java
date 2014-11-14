@@ -61,7 +61,7 @@ public class ModifyBookingsInDatabase {
 	    		 Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
 	             lgr.log(Level.SEVERE, ex.getMessage(), ex);        	
 	    	}
-	    	Booking.numberOfNextBooking++;
+	    	incrementNextBookingID();
 	    }
 	}
 	
@@ -351,5 +351,69 @@ public class ModifyBookingsInDatabase {
 			    	}
 			    }
 	      	return 1;
+    }
+    
+    public static int getNextBookingID() {
+    	Connection conn = null;
+		Statement st = null;
+		ResultSet rs = null;
+		  
+		String cs = "jdbc:mysql://localhost:3306/RM";
+	    String user = "sqluser2";
+	    String pwd = "sqluserpw";
+	    
+    try{
+    	conn = DriverManager.getConnection(cs, user, pwd);
+    	st = conn.createStatement();
+    	
+    	String query = "Select * from nextBookingID where SNo = 1";
+       	rs = st.executeQuery(query);
+    	rs.next();
+       	return Integer.parseInt(rs.getString("Number"));
+    }catch (SQLException ex) {
+	        Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
+	        lgr.log(Level.SEVERE, ex.getMessage(), ex);
+		  }finally{
+		    	try{
+		    		if(st != null) st.close();
+		    		if(conn != null) conn.close();
+		    	}catch(SQLException ex){
+		    		 Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
+		             lgr.log(Level.SEVERE, ex.getMessage(), ex);        	
+		    	}
+		    }
+	return 0;    	
+    }
+
+    private static void incrementNextBookingID() {
+    	int current = getNextBookingID();
+    	int next = current +1;
+    	
+    	 Connection conn = null;
+		 Statement st = null;
+		 
+		 String cs = "jdbc:mysql://localhost:3306/RM";
+	     String user = "sqluser2";
+	     String pwd = "sqluserpw";
+	     
+	     try{
+	      	conn = DriverManager.getConnection(cs, user, pwd);
+	      	st = conn.createStatement();
+	      	
+	      	String query = "update nextBookingID SET Number = " + Integer.toString(next) + " where SNo = 1";
+	      	st.execute(query);
+		    }catch (SQLException ex) {
+		        Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
+		        lgr.log(Level.SEVERE, ex.getMessage(), ex);
+		  }finally{
+		    	try{
+		    		if(st != null) st.close();
+		    		if(conn != null) conn.close();
+		    	}catch(SQLException ex){
+		    		 Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
+		             lgr.log(Level.SEVERE, ex.getMessage(), ex);        	
+		    	}
+		    }
+	      
     }
 }
