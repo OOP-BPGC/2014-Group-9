@@ -1,82 +1,252 @@
 package RM;
 
-import java.util.Calendar;
+// Author : Chirag Vartak
+// Rename it as 'Waitlist.java' before uploading.
 
-/**
- * 
- * @author Chirag Vartak
- * @version Luna
- *
- */
+// 
+
 public class Waitlist {
-	static WaitlistTestMethods test;
-	/**
-	 * The 'bookings' array is the array made from all the booking requests present in the database.
-	 * Some Database Management code is required to do this.
-	 */
-	public static Booking[] bookings = new Booking[]{};
-			// Replace the RHS with
-			// code to get all bookings from the database
-			// create a Booking object for each booking
-			// and store them in the bookings array
-	/**
-	 * The time the Waitlist was last processed.
-	 * By this, I mean the time at which the waitlist was last sorted and the booking requests in it were addressed.
-	 */
-	public static Calendar timeLastProcessed = Calendar.getInstance();
-	
-	Waitlist(){
-		timeLastProcessed.set(1970, Calendar.JANUARY, 1, 0, 0, 0);
-		Waitlist.sort();
-	}
-	
-	/**
-	 * This method is the heart of the Waitlist class.
-	 * It addresses the booking requests, considering clashes, privilege levels etc.
-	 */
-	public static void processClassrooms(){
-		for(int i=0; i<bookings.length-1; i++){
-			
-			if(bookings[i].bookingAddressed == false){
-			
-				bookings[i].bookingApproved = true;
-				bookings[i].bookingAddressed = true;
-				
-				for(int j=i+1; j<bookings.length; j++){
-					
-					if(isClash(bookings[i], bookings[j]) == true){
-						bookings[j].bookingApproved = false;
-						bookings[j].bookingAddressed = true;
+
+	// Algorithm for the below method:
+	// (First read the assumptions stated in the Booking2 and Classroom classes)
+	// 
+	// 1. Get the relevant(for a specific date) bookings from the database and make an array of Booking objects.
+	// 		First import them as Booking-objects-array. Then transfer these to Booking2-objects-array.
+	// 2. Get ALL the classrooms from the database and make an array of Classroom objects.
+	// Modify them in the memory itself.
+	// Write the now modified classroom objects array to a SEPERATE database. (We keep the original classrooms database untouched.)
+	public static void processClassrooms() throws NumberFormatException, InvalidTimeException{
+		
+		// 1
+		Booking[] tempBookings = ModifyBookingsInDatabase.SearchFromWaitlist("Date", "YYYY-MM-DD");		// Check if this works
+		Booking2[] bookings = new Booking2[]{};
+		for(int i=0; i<tempBookings.length; i++){
+			bookings[i].set(tempBookings[i]);
+		}
+		
+		// 2
+		Classroom[] classrooms = null;	// Database code
+		
+		// 3
+		// Sort the 'bookings' array (consider 'privilege' and 'id').
+		// After sorting, higher privileges will be at the top. Among members of a privilege, they will be in ascending order of 'id's.
+		// 'classrooms' array does not need to be sorted.
+		// 'classrooms' will have higher sized members at the top.
+		int nElements = bookings.length;
+		int highestPrivilege = bookings[0].privilege;
+		int elementWithHP = 0;	// for the 0th element
+		for(int i=0; i<nElements-1; i++){
+			for(int j=i+1; j<nElements; j++){
+				if(bookings[j].privilege > highestPrivilege){
+					highestPrivilege = bookings[j].privilege;
+					elementWithHP = j;
+				}
+			}
+			Booking2 temp = bookings[i];
+			bookings[i] = bookings[elementWithHP];
+			bookings[elementWithHP] = temp;
+		}
+		
+		// 4
+		// Address the bookings
+		
+		// Find the number of classrooms-available and booking-requests per size-of-classroom.
+		// Classroom size can vary from 1 to 5.
+		int nClassroomsWithSize[] = {0,0,0,0,0,0};
+		int nBookingsWithSize[] = {0,0,0,0,0,0};
+		for(int i=0; i<classrooms.length; i++){
+			switch (classrooms[i].size) {
+			case 1:
+				nClassroomsWithSize[1]++;
+				break;
+			case 2:
+				nClassroomsWithSize[2]++;
+				break;
+			case 3:
+				nClassroomsWithSize[3]++;
+				break;
+			case 4:
+				nClassroomsWithSize[4]++;
+				break;
+			case 5:
+				nClassroomsWithSize[5]++;
+				break;
+			default:
+				break;
+			}
+		}
+		for(int i=0; i<bookings.length; i++){
+			switch (bookings[i].size) {
+			case 1:
+				nBookingsWithSize[1]++;
+				break;
+			case 2:
+				nBookingsWithSize[2]++;
+				break;
+			case 3:
+				nBookingsWithSize[3]++;
+				break;
+			case 4:
+				nBookingsWithSize[4]++;
+				break;
+			case 5:
+				nBookingsWithSize[5]++;
+				break;
+			default:
+				break;
+			}
+		}
+		
+		// Finding the index of the first elements w.r.t. size in the 'classrooms' array.
+		int size5StartsAt = classrooms.length - nClassroomsWithSize[1] - nClassroomsWithSize[2] - nClassroomsWithSize[3] -
+				nClassroomsWithSize[4] - nClassroomsWithSize[5];
+		int size4StartsAt = classrooms.length - nClassroomsWithSize[1] - nClassroomsWithSize[2] - nClassroomsWithSize[3] -
+				nClassroomsWithSize[4];
+		int size3StartsAt = classrooms.length - nClassroomsWithSize[1] - nClassroomsWithSize[2] - nClassroomsWithSize[3];
+		int size2StartsAt = classrooms.length - nClassroomsWithSize[1] - nClassroomsWithSize[2];
+		int size1StartsAt = classrooms.length - nClassroomsWithSize[1];
+		
+		if(nClassroomsWithSize[5] >= nBookingsWithSize[5]){
+			int currentSize5Classroom = size5StartsAt;
+			for(int i=0; i<bookings.length; i++){
+				if(bookings[i].size == 5){
+					approveBooking(bookings[i], classrooms[currentSize5Classroom]);
+					currentSize5Classroom++;
+				}
+			}
+		}else{
+			int currentSize5Classroom = size5StartsAt;
+			int currentBookingOfThisSize = 1;
+			for(int i=0; i<bookings.length; i++){
+				if(bookings[i].size == 5){
+					if(currentBookingOfThisSize <= nBookingsWithSize[5]){
+						approveBooking(bookings[i], classrooms[currentSize5Classroom]);
+						currentSize5Classroom++;
+					}else{
+						declineBooking(bookings[i]);
 					}
+					currentBookingOfThisSize++;
 				}
 			}
 		}
-		timeLastProcessed = Calendar.getInstance();
+		if(nClassroomsWithSize[4] >= nBookingsWithSize[4]){
+			int currentSize4Classroom = size4StartsAt;
+			for(int i=0; i<bookings.length; i++){
+				if(bookings[i].size == 4){
+					approveBooking(bookings[i], classrooms[currentSize4Classroom]);
+					currentSize4Classroom++;
+				}
+			}
+		}else{
+			int currentSize4Classroom = size4StartsAt;
+			int currentBookingOfThisSize = 1;
+			for(int i=0; i<bookings.length; i++){
+				if(bookings[i].size == 4){
+					if(currentBookingOfThisSize <= nBookingsWithSize[4]){
+						approveBooking(bookings[i], classrooms[currentSize4Classroom]);
+						currentSize4Classroom++;
+					}else{
+						declineBooking(bookings[i]);
+					}
+					currentBookingOfThisSize++;
+				}
+			}
+		}
+		if(nClassroomsWithSize[3] >= nBookingsWithSize[3]){
+			int currentSize3Classroom = size3StartsAt;
+			for(int i=0; i<bookings.length; i++){
+				if(bookings[i].size == 3){
+					approveBooking(bookings[i], classrooms[currentSize3Classroom]);
+					currentSize3Classroom++;
+				}
+			}
+		}else{
+			int currentSize3Classroom = size3StartsAt;
+			int currentBookingOfThisSize = 1;
+			for(int i=0; i<bookings.length; i++){
+				if(bookings[i].size == 3){
+					if(currentBookingOfThisSize <= nBookingsWithSize[3]){
+						approveBooking(bookings[i], classrooms[currentSize3Classroom]);
+						currentSize3Classroom++;
+					}else{
+						declineBooking(bookings[i]);
+					}
+					currentBookingOfThisSize++;
+				}
+			}
+		}
+		if(nClassroomsWithSize[2] >= nBookingsWithSize[2]){
+			int currentSize2Classroom = size2StartsAt;
+			for(int i=0; i<bookings.length; i++){
+				if(bookings[i].size == 2){
+					approveBooking(bookings[i], classrooms[currentSize2Classroom]);
+					currentSize2Classroom++;
+				}
+			}
+		}else{
+			int currentSize2Classroom = size2StartsAt;
+			int currentBookingOfThisSize = 1;
+			for(int i=0; i<bookings.length; i++){
+				if(bookings[i].size == 2){
+					if(currentBookingOfThisSize <= nBookingsWithSize[2]){
+						approveBooking(bookings[i], classrooms[currentSize2Classroom]);
+						currentSize2Classroom++;
+					}else{
+						declineBooking(bookings[i]);
+					}
+					currentBookingOfThisSize++;
+				}
+			}
+		}
+		if(nClassroomsWithSize[1] >= nBookingsWithSize[1]){
+			int currentSize1Classroom = size1StartsAt;
+			for(int i=0; i<bookings.length; i++){
+				if(bookings[i].size == 1){
+					approveBooking(bookings[i], classrooms[currentSize1Classroom]);
+					currentSize1Classroom++;
+				}
+			}
+		}else{
+			int currentSize1Classroom = size1StartsAt;
+			int currentBookingOfThisSize = 1;
+			for(int i=0; i<bookings.length; i++){
+				if(bookings[i].size == 1){
+					if(currentBookingOfThisSize <= nBookingsWithSize[1]){
+						approveBooking(bookings[i], classrooms[currentSize1Classroom]);
+						currentSize1Classroom++;
+					}else{
+						declineBooking(bookings[i]);
+					}
+					currentBookingOfThisSize++;
+				}
+			}
+		}		
+				
 	}
 	
-	public static void setUpWaitlistTestMethods(WaitlistTestMethods test){
-		Waitlist.test = test;
-	}
-	// Required methods
 	
-	/**
-	 * Checks whether 'booking1' clashes with 'booking2'
-	 * @param booking1
-	 * @param booking2
-	 * @return
-	 * 
-	 */
-	public static boolean isClash(Booking booking1, Booking booking2){
-		//
-		return test.isClash(booking1, booking2);
+	
+	public static void writeToDatabase(){
+		// Code to write the entire 'classrooms' array to (a preferably new) database.
 	}
 	
-	/** Sorts the waitlist.
-	 * The members with higher privileges come at the top.
-	 * Among a group of members with a privilege, members who requested the booking earlier come at the top.
-	 * (Code not completed)
-	 */
-	public static void sort(){
+	
+	
+	// Methods required for the processClassrooms() method:
+	
+	public static void declineBooking(Booking2 booking){
+		
+		booking.bookingApproved = false;
+		booking.bookingAddressed = true;
+		
+	}
+	
+	public static void approveBooking(Booking2 booking, Classroom classroom){
+		
+		booking.bookingApproved = true;
+		booking.bookingAddressed = true;
+		classroom.isItBooked = true;
+		classroom.bookedUser = booking.username;
 		
 	}
 	

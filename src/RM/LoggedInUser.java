@@ -1,4 +1,7 @@
 package RM;
+
+import tests.LoggedInUserTestMethods;
+
 public class LoggedInUser implements UserWithPrivileges{
 
 	//Details details;

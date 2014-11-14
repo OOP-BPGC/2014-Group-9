@@ -1,4 +1,7 @@
 package RM;
+
+import tests.RoomTestMethods;
+
 // Author :Siddharth
 public class Room implements Resource{
 	private RoomTestMethods roomTest;
