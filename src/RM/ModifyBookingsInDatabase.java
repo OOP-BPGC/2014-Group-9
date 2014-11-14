@@ -61,6 +61,7 @@ public class ModifyBookingsInDatabase {
 	    		 Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
 	             lgr.log(Level.SEVERE, ex.getMessage(), ex);        	
 	    	}
+	    	Booking.numberOfNextBooking++;
 	    }
 	}
 	

@@ -9,7 +9,7 @@ public class LoggedInUserTest extends TestCase {
 	private LoggedInUserTestMethods test;
 	protected void setUp() {
 		test = createNiceMock(LoggedInUserTestMethods.class);
-		user = new LoggedInUser();
+	//	user = new LoggedInUser(fName, fName);
 	}
 	
 	public void testVerifyLogin(){

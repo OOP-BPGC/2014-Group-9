@@ -11,4 +11,12 @@ public class Booking {
 			this.BookingId = id;
 			this.details = details;
 		}
+
+		public int getBookingId() {
+			return BookingId;
+		}
+
+		public void setBookingId(int bookingId) {
+			BookingId = bookingId;
+		}
 }

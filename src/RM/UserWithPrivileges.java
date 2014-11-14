@@ -10,7 +10,7 @@ public interface UserWithPrivileges {
 	
 	//userName and pwd will be passed implicitly, by in the program itself
 	//based on privilege no, the priority will be decided
-	public void modifyBooking(Details details) throws NotLoggedInException;
+	public void modifyBooking(Details details, boolean Projector_reqd) throws NotLoggedInException;
 	
 	
 	//prints booking status
