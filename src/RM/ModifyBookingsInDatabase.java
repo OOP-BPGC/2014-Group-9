@@ -173,14 +173,14 @@ public class ModifyBookingsInDatabase {
 	    	return temp;
 	    }
     
-    public static void ConfirmBookings(int BookingID, ClassRoom room) throws NumberFormatException, InvalidTimeException{
+    public static void ConfirmBookings(int BookingID, String room) throws NumberFormatException, InvalidTimeException{
 	  Booking[] temp = SearchFromWaitlist("Id", Integer.toString(BookingID));
 	  assert(temp.length==1);
 	  addToConfirmed(temp[0],BookingID, room);
 	  deleteFromWaitlist(Integer.toString(BookingID));
   }
   
-    private static void addToConfirmed(Booking booking, int BookingID, ClassRoom room){
+    private static void addToConfirmed(Booking booking, int BookingID, String room){
 	 	Connection conn2 = null;
 		Statement st2 = null;
 				
@@ -197,7 +197,7 @@ public class ModifyBookingsInDatabase {
         			"EndTime, Room) VALUES (" + Integer.toString(BookingID) + ", '" +
         			booking.details.getUserID() + "', '" + booking.details.getDate() +
         			"', '" + booking.details.getStartTime() +"', '" + booking.details.getEndTime() +
-        			"', '" + room.toString() + "')";
+        			"', '" + room + "')";
         	
         	st2.execute(query);
         }catch (SQLException ex) {
@@ -415,5 +415,76 @@ public class ModifyBookingsInDatabase {
 		    	}
 		    }
 	      
+    }
+    
+    public static Classroom[] instantiateRooms(){
+    	 Connection conn = null;
+		 Statement st = null;
+		 ResultSet rs = null;
+		 Classroom[] temp = new Classroom[31];
+		 String cs = "jdbc:mysql://localhost:3306/RM";
+	     String user = "sqluser2";
+	     String pwd = "sqluserpw";
+	     
+	     try{
+		      	conn = DriverManager.getConnection(cs, user, pwd);
+		      	st = conn.createStatement();
+		      	
+		      	String query = "select * from Classrooms";
+		      	rs = st.executeQuery(query);
+		      	
+		      	while(rs.next()){
+		      		int id = Integer.parseInt(rs.getString("id"));
+		      		int size = Integer.parseInt(rs.getString("size"));
+		      		String name = rs.getString("name");
+		      		boolean open = rs.getBoolean("open");
+		      		
+		      		temp[id-1] = new Classroom(id,size,name,open);
+		      	}
+		      	
+		      	return temp;
+	     }catch (SQLException ex) {
+		        Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
+		        lgr.log(Level.SEVERE, ex.getMessage(), ex);
+		  }finally{
+		    	try{
+		    		if(st != null) st.close();
+		    		if(conn != null) conn.close();
+		    	}catch(SQLException ex){
+		    		 Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
+		             lgr.log(Level.SEVERE, ex.getMessage(), ex);        	
+		    	}
+		    }
+		return temp;
+    }
+
+    public static void modifyRoomAvailability(String room, boolean open){
+    	
+    	Connection conn = null;
+  	    Statement st = null;
+  	    int temp = open?1:0;
+  	
+  	    String cs = "jdbc:mysql://localhost:3306/RM";
+        String user = "sqluser2";
+        String password = "sqluserpw";
+        
+        try{
+        	conn = DriverManager.getConnection(cs, user, password);
+        	st = conn.createStatement();
+        	
+        	String query = "update Classrooms SET open = " + temp + " where name = '" + room + "'";
+        	st.execute(query);
+        }catch (SQLException ex) {
+	        Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
+	        lgr.log(Level.SEVERE, ex.getMessage(), ex);
+	    }finally{
+	    	try{
+	    		if(st != null) st.close();
+	    		if(conn != null) conn.close();
+	    	}catch(SQLException ex){
+	    		 Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
+	             lgr.log(Level.SEVERE, ex.getMessage(), ex);        	
+	    	}
+	    }
     }
 }

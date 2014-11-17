@@ -1,5 +1,4 @@
 package RM;
-
 // Author : Chirag Vartak
 // Rename it as 'Waitlist.java' before uploading.
 
@@ -18,35 +17,44 @@ public class Waitlist {
 	public static void processClassrooms() throws NumberFormatException, InvalidTimeException{
 		
 		// 1
-		Booking[] tempBookings = ModifyBookingsInDatabase.SearchFromWaitlist("Date", "YYYY-MM-DD");		// Check if this works
-		Booking2[] bookings = new Booking2[]{};
+		Booking[] tempBookings = ModifyBookingsInDatabase.SearchFromWaitlist("Date", "2014-07-08");		// Check if this works
+//		System.out.println(tempBookings.length);
+//		System.out.println(tempBookings[0].getBookingId());
+		Booking2[] bookings = new Booking2[tempBookings.length];
 		for(int i=0; i<tempBookings.length; i++){
+			//System.out.println(i);
+			bookings[i] = new Booking2();
 			bookings[i].set(tempBookings[i]);
+			System.out.println(bookings[i].id);
 		}
-		
+		System.out.println("_____________");
 		// 2
-		Classroom[] classrooms = null;	// Database code
+		Classroom[] classrooms = ModifyBookingsInDatabase.instantiateRooms();	// Database code
 		
 		// 3
 		// Sort the 'bookings' array (consider 'privilege' and 'id').
 		// After sorting, higher privileges will be at the top. Among members of a privilege, they will be in ascending order of 'id's.
 		// 'classrooms' array does not need to be sorted.
 		// 'classrooms' will have higher sized members at the top.
-		int nElements = bookings.length;
-		int highestPrivilege = bookings[0].privilege;
-		int elementWithHP = 0;	// for the 0th element
-		for(int i=0; i<nElements-1; i++){
-			for(int j=i+1; j<nElements; j++){
-				if(bookings[j].privilege > highestPrivilege){
-					highestPrivilege = bookings[j].privilege;
-					elementWithHP = j;
-				}
-			}
-			Booking2 temp = bookings[i];
-			bookings[i] = bookings[elementWithHP];
-			bookings[elementWithHP] = temp;
-		}
-		
+		Booking2[] temp = insertionSortGeneric(bookings);
+		//temp = insertionSortByID(temp);
+//		int nElements = bookings.length;
+//		int highestPrivilege = 0;
+//		int elementWithHP = -1;	// for the 0th element
+//		for(int i=0; i<nElements-1; i++){
+//		//	Booking2 temp = bookings[i];
+//			for(int j=i+1; j<nElements; j++){
+//				if(bookings[j].privilege > highestPrivilege){
+//					highestPrivilege = bookings[j].privilege;
+//					elementWithHP = j;
+//				}
+//			}
+//			Booking2 temp = bookings[i];
+//			bookings[i] = bookings[elementWithHP];
+//			bookings[elementWithHP] = temp;
+//		}
+		for(Booking2 one : temp)
+		System.out.println(one.privilege + "- " + one.id);
 		// 4
 		// Address the bookings
 		
@@ -96,7 +104,10 @@ public class Waitlist {
 				break;
 			}
 		}
-		
+		System.out.println("-----");
+		for(int i : nBookingsWithSize)		System.out.println(i);
+		System.out.println("---------");
+		for( int j : nClassroomsWithSize) System.out.println(j);
 		// Finding the index of the first elements w.r.t. size in the 'classrooms' array.
 		int size5StartsAt = classrooms.length - nClassroomsWithSize[1] - nClassroomsWithSize[2] - nClassroomsWithSize[3] -
 				nClassroomsWithSize[4] - nClassroomsWithSize[5];
@@ -106,11 +117,15 @@ public class Waitlist {
 		int size2StartsAt = classrooms.length - nClassroomsWithSize[1] - nClassroomsWithSize[2];
 		int size1StartsAt = classrooms.length - nClassroomsWithSize[1];
 		
+		System.out.println(size5StartsAt + " " + size4StartsAt + " " + size3StartsAt + " " + size2StartsAt + " " + size1StartsAt);
 		if(nClassroomsWithSize[5] >= nBookingsWithSize[5]){
 			int currentSize5Classroom = size5StartsAt;
+			System.out.println("-------");
+			System.out.println(currentSize5Classroom);
 			for(int i=0; i<bookings.length; i++){
 				if(bookings[i].size == 5){
-					approveBooking(bookings[i], classrooms[currentSize5Classroom]);
+					System.out.println(bookings[i].id);
+					ModifyBookingsInDatabase.ConfirmBookings(bookings[i].id, "Audi");
 					currentSize5Classroom++;
 				}
 			}
@@ -241,13 +256,46 @@ public class Waitlist {
 		
 	}
 	
-	public static void approveBooking(Booking2 booking, Classroom classroom){
+	public static void approveBooking(Booking2 booking, Classroom classroom) throws NumberFormatException, InvalidTimeException{
 		
 		booking.bookingApproved = true;
 		booking.bookingAddressed = true;
 		classroom.isItBooked = true;
 		classroom.bookedUser = booking.username;
+		ModifyBookingsInDatabase.ConfirmBookings(booking.id, classroom.name);
 		
 	}
+	public static Booking2[] insertionSortGeneric(Booking2[] a) {
+        for (int i=0; i < a.length; i++) {
+            /* Insert a[i] into the sorted sublist */
+            Booking2 v = a[i];
+            int j;
+            for (j = i - 1; j >= 0; j--) {
+            	//System.out.println(j + "*");
+                if (a[j].privilege > a[i].privilege ) break;
+        //        else if( a[j].privilege==a[i].privilege && a[j].id>a[i].id) break;
+               a[j + 1] = a[j];
+            }
+           a[j + 1] = v;
+        }
+        return a;
+    }
+	
+	public static Booking2[] insertionSortByID(Booking2[] a) {
+        for (int i=0; i < a.length; i++) {
+            /* Insert a[i] into the sorted sublist */
+            Booking2 v = a[i];
+            int j;
+            for (j = i - 1; j >= 0; j--) {
+            	//System.out.println(j + "*");
+                if (a[j].id < a[i].id ) break;
+        //        else if( a[j].privilege==a[i].privilege && a[j].id>a[i].id) break;
+               a[j + 1] = a[j];
+            }
+           a[j + 1] = v;
+        }
+        return a;
+    }
+	
 	
 }

@@ -13,4 +13,14 @@ public class Classroom{
 	public String name = "noname";
 	public boolean isItBooked = false;
 	public String bookedUser = "noname";
+	
+	public boolean allowedToBook = true;
+	public Booking2[] booking = null;
+	
+	public Classroom(int id, int size, String name, boolean open){
+		this.id = id;
+		this.size = size;
+		this.name = name;
+		this.allowedToBook = open;
+	}
 }
