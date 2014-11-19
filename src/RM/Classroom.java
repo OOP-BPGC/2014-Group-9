@@ -14,8 +14,8 @@ public class Classroom{
 	public boolean isItBooked = false;
 	public String bookedUser = "noname";
 	
-	public boolean allowedToBook = true;
-	public Booking2[] booking = null;
+	public boolean allowedToBook = false;
+	
 	
 	public Classroom(int id, int size, String name, boolean open){
 		this.id = id;

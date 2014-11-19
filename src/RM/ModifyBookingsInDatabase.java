@@ -23,7 +23,7 @@ public class ModifyBookingsInDatabase {
 	 * @param BookingID ID number of the booking. Should be incremented automatically
 	 * @param projectorReqd Whether Projector is required or not. True = needed
 	 */
-	public static void addToWaitlist(Details details, int BookingID, boolean projectorReqd) {
+	public static void addToWaitlist(Details details, boolean projectorReqd) {
 		Connection conn2 = null;
 		Statement st2 = null;
 				
@@ -36,20 +36,25 @@ public class ModifyBookingsInDatabase {
         	conn2 = DriverManager.getConnection(cs, user2, password);
         	st2 = conn2.createStatement();
         	
-        	String query = projectorReqd? "Insert into Trial(Id, UserId, Date, StartTime," +
+        	String query = projectorReqd? "Insert into Trial(UserId, Date, StartTime," +
         			" EndTime, RoomSize, Priority, ARC_PermissionReqd, CC_PermissionReqd, Reason) " +
-        			"VALUES(" + Integer.toString(BookingID)+ ", '" + details.getUserID() + "', '" + 
+        			"VALUES(" + "'" + details.getUserID() + "', '" + 
         			details.getDate() + "', '" + details.getStartTime() + "', '" +
         			details.getEndTime() + "', " + details.getRoomSize() + "," + details.getPriority()+
         			", false," + Boolean.toString(!projectorReqd) + ", '" + details.getReason() + "')" :
-    				"Insert into Trial(Id, UserId, Date, StartTime, EndTime, RoomSize, " +
-    				"Priority, ARC_PermissionReqd, Reason) VALUES(" + 
-    				Integer.toString(BookingID)+ ", '" + details.getUserID() + "', '" + 
+    				"Insert into Trial(UserId, Date, StartTime, EndTime, RoomSize, " +
+    				"Priority, ARC_PermissionReqd, Reason) VALUES(" + "'" + details.getUserID() + "', '" + 
         			details.getDate() + "', '" + details.getStartTime() + "', '" +
         			details.getEndTime() + "', " + details.getRoomSize() + "," + details.getPriority()+
         			", false, '" + details.getReason() + "')";
-        	System.out.println(query);
+        	
         	st2.execute(query);		
+        	
+        	String query2 = "Select * from Trial Order by Id Desc Limit 1";
+        	ResultSet rs = st2.executeQuery(query2);
+        	while(rs.next()){
+        		System.out.println("Your Booking Id is " + rs.getString("Id"));
+        	}
         }catch (SQLException ex) {
 	        Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
 	        lgr.log(Level.SEVERE, ex.getMessage(), ex);
@@ -61,40 +66,59 @@ public class ModifyBookingsInDatabase {
 	    		 Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
 	             lgr.log(Level.SEVERE, ex.getMessage(), ex);        	
 	    	}
-	    	incrementNextBookingID();
+	    	
 	    }
 	}
 	
 	/**Deletes the booking from the Waitlist database given its booking ID number. 
 	 * 
 	 * @param Id Booking ID number must be inputted
+	 * @throws InvalidTimeException 
+	 * @throws NumberFormatException 
 	 */
-    public static void deleteFromWaitlist(String Id) {
-    		Connection conn = null;
-    		Statement st = null;
+    public static void deleteFromWaitlist(String Id, String username) throws NumberFormatException, InvalidTimeException {
+    		Booking[] temp = SearchFromWaitlist("Id", Id);
+    	    	
+    		if(temp.length!=1){
+    			System.out.println("No such Booking exists");
+    			return;
+    		}
+    		else{
     		
-    		String cs = "jdbc:mysql://localhost:3306/RM";
-            String user = "sqluser2";
-            String password = "sqluserpw";
-            
-            
-            try{
-            	conn = DriverManager.getConnection(cs, user, password);
-            	st = conn.createStatement();
-            	
-            	String query = "Delete from Trial where Id = " + Id;
-            	st.execute(query);
-	    	}catch (SQLException ex) {
-	            Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
-	            lgr.log(Level.SEVERE, ex.getMessage(), ex);
-	        }finally{
-	        	try{
-	        		if(st != null) st.close();
-	        		if(conn != null) conn.close();
-	        	}catch(SQLException ex){
-	        		 Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
-	                 lgr.log(Level.SEVERE, ex.getMessage(), ex);        	
-	        	}
+    			if(temp[0].details.getUserID().equals(username)){
+    			
+		    		Connection conn = null;
+		    		Statement st = null;
+		    		
+		    		String cs = "jdbc:mysql://localhost:3306/RM";
+		            String user = "sqluser2";
+		            String password = "sqluserpw";
+		            
+		            
+		            try{
+		            	conn = DriverManager.getConnection(cs, user, password);
+		            	st = conn.createStatement();
+		            	
+		            	String query = "Delete from Trial where Id = " + Id;
+		            	st.execute(query);
+		            	System.out.println("Booking deleted successfully");
+			    	}catch (SQLException ex) {
+			            Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
+			            lgr.log(Level.SEVERE, ex.getMessage(), ex);
+			        }finally{
+			        	try{
+			        		if(st != null) st.close();
+			        		if(conn != null) conn.close();
+			        	}catch(SQLException ex){
+			        		 Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
+			                 lgr.log(Level.SEVERE, ex.getMessage(), ex);        	
+			        	}
+			        }
+		        }
+    			else {
+    				System.out.println("The booking ID does not correspond to the logged in User");
+    				return;
+    			}
 	        }
     	}
     	/**Searches the Waitlist database for the Row containing the Key in the column containing the SearchBy string
@@ -128,7 +152,7 @@ public class ModifyBookingsInDatabase {
             					"Select * from Trial where " + SearchBy +
             					" = " + Key:
             					"Select * from Trial where " + SearchBy+" = '" + Key +"'"; 
-            	System.out.println(query);
+            	
             	rs = st.executeQuery(query);
             	if(rs==null) System.out.println("No return");
             	temp = compileBookings(rs);
@@ -177,7 +201,7 @@ public class ModifyBookingsInDatabase {
 	  Booking[] temp = SearchFromWaitlist("Id", Integer.toString(BookingID));
 	  assert(temp.length==1);
 	  addToConfirmed(temp[0],BookingID, room);
-	  deleteFromWaitlist(Integer.toString(BookingID));
+	//  deleteFromWaitlist(Integer.toString(BookingID));
   }
   
     private static void addToConfirmed(Booking booking, int BookingID, String room){

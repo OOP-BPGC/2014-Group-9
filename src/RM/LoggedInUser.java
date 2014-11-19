@@ -25,7 +25,7 @@ public class LoggedInUser implements UserWithPrivileges{
 	public void modifyBooking(Details details, boolean projectorReqd) throws NotLoggedInException  {
 		if(!loggedIn) throw new NotLoggedInException();
 		// TODO Auto-generated method stub
-		ModifyBookingsInDatabase.addToWaitlist(details, Booking.numberOfNextBooking, projectorReqd);
+		ModifyBookingsInDatabase.addToWaitlist(details, projectorReqd);
 	}
 
 	public void checkPendingBookingRequets(String bookingID) throws NotLoggedInException{

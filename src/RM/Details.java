@@ -7,7 +7,7 @@ public class Details {
 		private String startTime; //Start time in format 'HH:MM' 24 hour clock
 		private String endTime; 	//end time in format 'HH:MM' 24 hour clock
 		private int roomSize;
-		private ClassRoom room;
+	
 		private int priority;
 		private String reason;
 		

@@ -87,13 +87,11 @@ public class TestProject
 				Details details;
 				try {
 					details = new Details(s1, s3, s4, s5, Integer.parseInt(s6), user.getPrivilege(), s7);
+							
 				
+					ModifyBookingsInDatabase.addToWaitlist(details, projectorReqd);
 					
-					int bookingID = Booking.numberOfNextBooking;
-					
-					ModifyBookingsInDatabase.addToWaitlist(details, bookingID, projectorReqd);
-					
-					System.out.println("\nYour booking ID is " + bookingID);
+					//System.out.println("\nYour booking ID is " + bookingID);
 				} catch (InvalidTimeException e) {
 					//Insert code to reset startTime/EndTime
 				}
@@ -109,7 +107,7 @@ public class TestProject
 					System.out.println("Are you sure you want to cancel y/n?");
 					String confirmation = new String(scan.nextLine());
 					
-					if(confirmation.equals("y")||confirmation.equals("Y")) ModifyBookingsInDatabase.deleteFromWaitlist(cancelID);
+					if(confirmation.equals("y")||confirmation.equals("Y")) ModifyBookingsInDatabase.deleteFromWaitlist(cancelID, s1);
 					
 					break;
 				
