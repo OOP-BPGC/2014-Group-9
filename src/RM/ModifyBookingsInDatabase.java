@@ -487,4 +487,80 @@ public class ModifyBookingsInDatabase {
 	    	}
 	    }
     }
+    
+    public static void checkAvailability(String date){
+      	 System.out.println("For the " + date);
+    	 System.out.println("Room Size                |        Number of Rooms Available    | Number of Bookings made");
+    	for(int i = 1; i<6; i++){
+    		checkAvailability(i,date);
+    	}
+    }
+    
+    private static void checkAvailability(int Size, String date){
+    	Connection conn = null;
+  	    Statement st = null;
+  	  
+  	    String cs = "jdbc:mysql://localhost:3306/RM";
+        String user = "sqluser2";
+        String password = "sqluserpw";
+        int max = getMax(Size);
+        try{
+        	conn = DriverManager.getConnection(cs, user, password);
+        	st = conn.createStatement();
+        	
+        	String query = "Select Count(RoomSize) As RoomSize From Trial Where RoomSize = " + Integer.toString(Size) + " AND "
+        			+ "Date = '" + date + "'";
+        	ResultSet rs = st.executeQuery(query);
+        	while(rs.next()){
+        		System.out.println("           " + Integer.toString(Size) + "            |            " +
+        				Integer.toString(max) + "                       |                 " + rs.getString("RoomSize"));
+        	}
+        	
+        }catch (SQLException ex) {
+    	        Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
+    	        lgr.log(Level.SEVERE, ex.getMessage(), ex);
+	    }finally{
+	    	try{
+	    		if(st != null) st.close();
+	    		if(conn != null) conn.close();
+	    	}catch(SQLException ex){
+	    		 Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
+	             lgr.log(Level.SEVERE, ex.getMessage(), ex);        	
+	    	}
+	    }
+    	
+    }
+    
+    private static int getMax(int size){
+	    	Connection conn = null;
+	  	    Statement st = null;
+	  	  
+	  	    String cs = "jdbc:mysql://localhost:3306/RM";
+	        String user = "sqluser2";
+	        String password = "sqluserpw";
+	        
+	        try{
+	        	conn = DriverManager.getConnection(cs, user, password);
+	        	st = conn.createStatement();
+	        	
+	        	String query = "Select Count(Size) AS Count From Classrooms where Size = " + Integer.toString(size) + " AND Open = 1";
+	        	ResultSet rs = st.executeQuery(query);
+	        	
+	        	while(rs.next()){
+	        		return Integer.parseInt(rs.getString("Count"));
+	        	}
+	        }catch (SQLException ex) {
+    	        Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
+    	        lgr.log(Level.SEVERE, ex.getMessage(), ex);
+		    }finally{
+		    	try{
+		    		if(st != null) st.close();
+		    		if(conn != null) conn.close();
+		    	}catch(SQLException ex){
+		    		 Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
+		             lgr.log(Level.SEVERE, ex.getMessage(), ex);        	
+		    	}
+		    }
+			return -1;
+    }
 }
