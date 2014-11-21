@@ -2,7 +2,6 @@ package tests;
 
 import RM.LoggedInUser;
 import RM.NotLoggedInException;
-import RM.Room;
 import RM.UserPrivilegeTooLowException;
 import junit.framework.TestCase;
 import static org.easymock.EasyMock.*;
@@ -12,7 +11,7 @@ public class LoggedInUserTest extends TestCase {
 	private LoggedInUser user;
 	private LoggedInUserTestMethods test;
 	protected void setUp() {
-		test = createNiceMock(LoggedInUserTestMethods.class);
+		//test = createNiceMock(LoggedInUserTestMethods.class);
 	//	user = new LoggedInUser(fName, fName);
 	}
 	
@@ -50,10 +49,8 @@ public class LoggedInUserTest extends TestCase {
 			}finally{		
 			user.setPrivilege(2);
 			try {
-				user.modifyAvailableRooms(new Room[] {new Room(1), new Room(2)});
-			}catch(UserPrivilegeTooLowException f){
-				System.out.println("User privilege too low");
-				assertTrue(true);
+	//			user.modifyAvailableRooms(new Room[] {new Room(1), new Room(2)});
+			
 			}catch(Exception e){
 				
 			}

@@ -14,47 +14,66 @@ public class Waitlist {
 	// 2. Get ALL the classrooms from the database and make an array of Classroom objects.
 	// Modify them in the memory itself.
 	// Write the now modified classroom objects array to a SEPERATE database. (We keep the original classrooms database untouched.)
-	public static void processClassrooms() throws NumberFormatException, InvalidTimeException{
+	public static void processClassrooms(String date) throws NumberFormatException, InvalidTimeException{
 		
 		// 1
-		Booking[] tempBookings = ModifyBookingsInDatabase.SearchFromWaitlist("Date", "2014-07-08");		// Check if this works
+		Booking[] tempBookings = ModifyBookingsInDatabase.getBookingsFromWaitlist(date);		// Check if this works
 //		System.out.println(tempBookings.length);
 //		System.out.println(tempBookings[0].getBookingId());
 		Booking2[] bookings = new Booking2[tempBookings.length];
-		for(int i=0; i<tempBookings.length; i++){
-			//System.out.println(i);
+		for(int i=0; i<tempBookings.length;i++){
 			bookings[i] = new Booking2();
-			bookings[i].set(tempBookings[i]);
-			System.out.println(bookings[i].id);
 		}
-		System.out.println("_____________");
-		// 2
-		Classroom[] classrooms = ModifyBookingsInDatabase.instantiateRooms();	// Database code
+		for(int i=0; i<tempBookings.length; i++){
+			bookings[i].set(tempBookings[i]);
+		}
 		
+		
+		// 2
+//		Classroom[] classrooms = null;	// Database code
+		Classroom[] classrooms = ModifyBookingsInDatabase.instantiateRooms();
+
 		// 3
 		// Sort the 'bookings' array (consider 'privilege' and 'id').
 		// After sorting, higher privileges will be at the top. Among members of a privilege, they will be in ascending order of 'id's.
 		// 'classrooms' array does not need to be sorted.
 		// 'classrooms' will have higher sized members at the top.
-		Booking2[] temp = insertionSortGeneric(bookings);
-		//temp = insertionSortByID(temp);
-//		int nElements = bookings.length;
-//		int highestPrivilege = 0;
-//		int elementWithHP = -1;	// for the 0th element
-//		for(int i=0; i<nElements-1; i++){
-//		//	Booking2 temp = bookings[i];
-//			for(int j=i+1; j<nElements; j++){
-//				if(bookings[j].privilege > highestPrivilege){
-//					highestPrivilege = bookings[j].privilege;
-//					elementWithHP = j;
-//				}
-//			}
-//			Booking2 temp = bookings[i];
-//			bookings[i] = bookings[elementWithHP];
-//			bookings[elementWithHP] = temp;
-//		}
-		for(Booking2 one : temp)
-		System.out.println(one.privilege + "- " + one.id);
+		int nElements = bookings.length;
+		int highestPrivilege = bookings[0].privilege;
+		int elementWithHP = 0;	// for the 0th element
+		Booking2 temp = new Booking2();
+		for(int i=0; i<nElements-1; i++){
+			elementWithHP = i;
+			highestPrivilege = bookings[i].privilege;
+			for(int j=i+1; j<nElements; j++){
+				if(bookings[j].privilege > highestPrivilege){
+					highestPrivilege = bookings[j].privilege;
+					elementWithHP = j;
+				}
+			}
+			temp = bookings[i];
+			bookings[i] = bookings[elementWithHP];
+			bookings[elementWithHP] = temp;
+		}
+		
+		int lowestId = bookings[0].id;
+		int elementWithLI = 0;	// for the 0th element
+		Booking2 temp2 = new Booking2();
+		for(int i=0; i<nElements-1; i++){
+			elementWithLI = i;
+			lowestId = bookings[i].id;
+			for(int j=i+1; j<nElements; j++){
+				if(bookings[j].id < lowestId && bookings[i].privilege == bookings[j].privilege){
+					lowestId = bookings[j].id;
+					elementWithLI = j;
+				}
+			}
+			temp2 = bookings[i];
+			bookings[i] = bookings[elementWithLI];
+			bookings[elementWithLI] = temp2;
+		}
+		
+		
 		// 4
 		// Address the bookings
 		
@@ -104,10 +123,8 @@ public class Waitlist {
 				break;
 			}
 		}
-		System.out.println("-----");
-		for(int i : nBookingsWithSize)		System.out.println(i);
-		System.out.println("---------");
-		for( int j : nClassroomsWithSize) System.out.println(j);
+		
+		
 		// Finding the index of the first elements w.r.t. size in the 'classrooms' array.
 		int size5StartsAt = classrooms.length - nClassroomsWithSize[1] - nClassroomsWithSize[2] - nClassroomsWithSize[3] -
 				nClassroomsWithSize[4] - nClassroomsWithSize[5];
@@ -117,15 +134,12 @@ public class Waitlist {
 		int size2StartsAt = classrooms.length - nClassroomsWithSize[1] - nClassroomsWithSize[2];
 		int size1StartsAt = classrooms.length - nClassroomsWithSize[1];
 		
-		System.out.println(size5StartsAt + " " + size4StartsAt + " " + size3StartsAt + " " + size2StartsAt + " " + size1StartsAt);
+		
 		if(nClassroomsWithSize[5] >= nBookingsWithSize[5]){
 			int currentSize5Classroom = size5StartsAt;
-			System.out.println("-------");
-			System.out.println(currentSize5Classroom);
 			for(int i=0; i<bookings.length; i++){
 				if(bookings[i].size == 5){
-					System.out.println(bookings[i].id);
-					ModifyBookingsInDatabase.ConfirmBookings(bookings[i].id, "Audi");
+					approveBooking(bookings[i], classrooms[currentSize5Classroom]);
 					currentSize5Classroom++;
 				}
 			}
@@ -134,11 +148,19 @@ public class Waitlist {
 			int currentBookingOfThisSize = 1;
 			for(int i=0; i<bookings.length; i++){
 				if(bookings[i].size == 5){
-					if(currentBookingOfThisSize <= nBookingsWithSize[5]){
+					if(currentBookingOfThisSize <= nClassroomsWithSize[5]){
 						approveBooking(bookings[i], classrooms[currentSize5Classroom]);
 						currentSize5Classroom++;
 					}else{
-						declineBooking(bookings[i]);
+						for(int j=size5StartsAt; j<size4StartsAt; j++){
+							if(isClash(bookings[i], classrooms[j], bookings) == false){
+								approveBooking(bookings[i], classrooms[j]);
+								break;
+							}
+						}
+						if(bookings[i].bookingApproved == false){
+							declineBooking(bookings[i]);
+						}
 					}
 					currentBookingOfThisSize++;
 				}
@@ -157,11 +179,19 @@ public class Waitlist {
 			int currentBookingOfThisSize = 1;
 			for(int i=0; i<bookings.length; i++){
 				if(bookings[i].size == 4){
-					if(currentBookingOfThisSize <= nBookingsWithSize[4]){
+					if(currentBookingOfThisSize <= nClassroomsWithSize[4]){
 						approveBooking(bookings[i], classrooms[currentSize4Classroom]);
 						currentSize4Classroom++;
 					}else{
-						declineBooking(bookings[i]);
+						for(int j=size4StartsAt; j<size3StartsAt; j++){
+							if(isClash(bookings[i], classrooms[j], bookings) == false){
+								approveBooking(bookings[i], classrooms[j]);
+								break;
+							}
+						}
+						if(bookings[i].bookingApproved == false){
+							declineBooking(bookings[i]);
+						}
 					}
 					currentBookingOfThisSize++;
 				}
@@ -180,11 +210,19 @@ public class Waitlist {
 			int currentBookingOfThisSize = 1;
 			for(int i=0; i<bookings.length; i++){
 				if(bookings[i].size == 3){
-					if(currentBookingOfThisSize <= nBookingsWithSize[3]){
+					if(currentBookingOfThisSize <= nClassroomsWithSize[3]){
 						approveBooking(bookings[i], classrooms[currentSize3Classroom]);
 						currentSize3Classroom++;
 					}else{
-						declineBooking(bookings[i]);
+						for(int j=size3StartsAt; j<size2StartsAt; j++){
+							if(isClash(bookings[i], classrooms[j], bookings) == false){
+								approveBooking(bookings[i], classrooms[j]);
+								break;
+							}
+						}
+						if(bookings[i].bookingApproved == false){
+							declineBooking(bookings[i]);
+						}
 					}
 					currentBookingOfThisSize++;
 				}
@@ -203,11 +241,19 @@ public class Waitlist {
 			int currentBookingOfThisSize = 1;
 			for(int i=0; i<bookings.length; i++){
 				if(bookings[i].size == 2){
-					if(currentBookingOfThisSize <= nBookingsWithSize[2]){
+					if(currentBookingOfThisSize <= nClassroomsWithSize[2]){
 						approveBooking(bookings[i], classrooms[currentSize2Classroom]);
 						currentSize2Classroom++;
 					}else{
-						declineBooking(bookings[i]);
+						for(int j=size2StartsAt; j<size1StartsAt; j++){
+							if(isClash(bookings[i], classrooms[j], bookings) == false){
+								approveBooking(bookings[i], classrooms[j]);
+								break;
+							}
+						}
+						if(bookings[i].bookingApproved == false){
+							declineBooking(bookings[i]);
+						}
 					}
 					currentBookingOfThisSize++;
 				}
@@ -226,29 +272,29 @@ public class Waitlist {
 			int currentBookingOfThisSize = 1;
 			for(int i=0; i<bookings.length; i++){
 				if(bookings[i].size == 1){
-					if(currentBookingOfThisSize <= nBookingsWithSize[1]){
+					if(currentBookingOfThisSize <= nClassroomsWithSize[1]){
 						approveBooking(bookings[i], classrooms[currentSize1Classroom]);
 						currentSize1Classroom++;
 					}else{
-						declineBooking(bookings[i]);
+						for(int j=size1StartsAt; j<classrooms.length; j++){
+							if(isClash(bookings[i], classrooms[j], bookings) == false){
+								approveBooking(bookings[i], classrooms[j]);
+								break;
+							}
+						}
+						if(bookings[i].bookingApproved == false){
+							declineBooking(bookings[i]);
+						}
 					}
 					currentBookingOfThisSize++;
 				}
 			}
 		}		
-				
+		
+		System.out.println("The program ends!");
 	}
-	
-	
-	
-	public static void writeToDatabase(){
-		// Code to write the entire 'classrooms' array to (a preferably new) database.
-	}
-	
-	
-	
-	// Methods required for the processClassrooms() method:
-	
+		
+			
 	public static void declineBooking(Booking2 booking){
 		
 		booking.bookingApproved = false;
@@ -256,46 +302,78 @@ public class Waitlist {
 		
 	}
 	
+	
+	
 	public static void approveBooking(Booking2 booking, Classroom classroom) throws NumberFormatException, InvalidTimeException{
 		
 		booking.bookingApproved = true;
 		booking.bookingAddressed = true;
 		classroom.isItBooked = true;
 		classroom.bookedUser = booking.username;
+		
+		booking.classroom = classroom;
+		classroom.bookingIds.add(booking.id);
 		ModifyBookingsInDatabase.ConfirmBookings(booking.id, classroom.name);
+	}
+
+
+
+	public static boolean isClash(Booking2 booking, Classroom classroom, Booking2[] bookings){
+		
+		int bookingStartTime = getMinutes(booking.startTime);
+		int bookingEndTime = getMinutes(booking.endTime);
+		int currentListElementStartTime = -1;
+		int currentListElementEndTime = -1;
+		Booking2 currentBookingInClassroom = null;
+		
+		for(int i=0; i<classroom.bookingIds.size(); i++){
+			currentBookingInClassroom = getBooking2WithId(classroom.bookingIds.get(i), bookings);
+			currentListElementStartTime = getMinutes(currentBookingInClassroom.startTime);
+			currentListElementEndTime = getMinutes(currentBookingInClassroom.endTime);
+			if(currentListElementStartTime>=bookingStartTime && currentListElementStartTime<bookingEndTime){
+				return true;
+			}
+			if(currentListElementEndTime>bookingStartTime && currentListElementEndTime<=bookingEndTime){
+				return true;
+			}
+			if(currentListElementStartTime<bookingStartTime && currentListElementEndTime>bookingEndTime){
+				return true;
+			}
+		}
+		return false;
 		
 	}
-	public static Booking2[] insertionSortGeneric(Booking2[] a) {
-        for (int i=0; i < a.length; i++) {
-            /* Insert a[i] into the sorted sublist */
-            Booking2 v = a[i];
-            int j;
-            for (j = i - 1; j >= 0; j--) {
-            	//System.out.println(j + "*");
-                if (a[j].privilege > a[i].privilege ) break;
-        //        else if( a[j].privilege==a[i].privilege && a[j].id>a[i].id) break;
-               a[j + 1] = a[j];
-            }
-           a[j + 1] = v;
-        }
-        return a;
-    }
-	
-	public static Booking2[] insertionSortByID(Booking2[] a) {
-        for (int i=0; i < a.length; i++) {
-            /* Insert a[i] into the sorted sublist */
-            Booking2 v = a[i];
-            int j;
-            for (j = i - 1; j >= 0; j--) {
-            	//System.out.println(j + "*");
-                if (a[j].id < a[i].id ) break;
-        //        else if( a[j].privilege==a[i].privilege && a[j].id>a[i].id) break;
-               a[j + 1] = a[j];
-            }
-           a[j + 1] = v;
-        }
-        return a;
-    }
-	
-	
+
+
+
+	public static Booking2 getBooking2WithId(int id, Booking2[] bookings){
+		
+		for(int i=0; i<bookings.length; i++){
+			if(id == bookings[i].id){
+				return bookings[i];
+			}
+		}
+		return null;
+		
+	}
+
+
+
+	public static int getMinutes(String strHours){
+		String startTime1 = strHours.substring(0, 2);
+		String startTime2 = strHours.substring(3, 5);
+		int intStartTime1 = Integer.parseInt(startTime1);
+		int intStartTime2 = Integer.parseInt(startTime2);
+		int totalMinutes = intStartTime1*60 + intStartTime2;
+		return totalMinutes;
+	}
+
+
+
+
+
+
+
+
+
 }

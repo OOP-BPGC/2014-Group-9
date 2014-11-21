@@ -37,13 +37,7 @@ public class LoggedInUser implements UserWithPrivileges{
 		//checks bookingID in database, and returns appropriate message
 	}
 	
-	public void modifyAvailableRooms(Room[] rooms) throws NotLoggedInException,
-												UserPrivilegeTooLowException {
-		if(!loggedIn) throw new NotLoggedInException();
-		if(privilege!=3) throw new UserPrivilegeTooLowException();
-		//Room.modifyAvailability(false);
-	}
-	
+
 	public void setLoggedIn(boolean a){
 		loggedIn = a;
 	}

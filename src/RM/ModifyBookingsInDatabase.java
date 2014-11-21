@@ -121,7 +121,42 @@ public class ModifyBookingsInDatabase {
     			}
 	        }
     	}
-    	/**Searches the Waitlist database for the Row containing the Key in the column containing the SearchBy string
+  
+    public static void deleteFromWaitlist(String Id) throws Exception{
+
+		Connection conn = null;
+		Statement st = null;
+		
+		String cs = "jdbc:mysql://localhost:3306/RM";
+        String user = "sqluser2";
+        String password = "sqluserpw";
+        
+        
+        try{
+        	conn = DriverManager.getConnection(cs, user, password);
+        	st = conn.createStatement();
+        	
+        	String query = "Delete from Trial where Id = " + Id;
+        	st.execute(query);
+        	System.out.println("Booking deleted successfully");
+    	}catch (SQLException ex) {
+            Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
+            lgr.log(Level.SEVERE, ex.getMessage(), ex);
+        }finally{
+        	try{
+        		if(st != null) st.close();
+        		if(conn != null) conn.close();
+        	}catch(SQLException ex){
+        		 Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
+                 lgr.log(Level.SEVERE, ex.getMessage(), ex);        	
+        	}
+        }
+    }
+    
+    
+    
+    
+    /**Searches the Waitlist database for the Row containing the Key in the column containing the SearchBy string
     	 * All the Rows which are returned are converted to a Booking object and returned as an Array
     	 * 
     	 * @param SearchBy  Column Name in String format
@@ -152,6 +187,87 @@ public class ModifyBookingsInDatabase {
             					"Select * from Trial where " + SearchBy +
             					" = " + Key:
             					"Select * from Trial where " + SearchBy+" = '" + Key +"'"; 
+            	
+            	rs = st.executeQuery(query);
+            	//if(rs==null) System.out.println("No return");
+            	temp = compileBookings(rs);
+            	int i = 0;
+            	while(temp[i]!= null){
+            		i++;
+            	}
+            	Booking[] returnable = new Booking[i];
+            	for(int j = 0; j<i; j++){
+            		returnable[j] = temp[j];
+            	}
+            	
+            	return returnable;
+		 }catch (SQLException ex) {
+	            Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
+	            lgr.log(Level.SEVERE, ex.getMessage(), ex);
+		        }finally{
+		        	try{
+		        		if(st != null) st.close();
+		        		if(conn != null) conn.close();
+		        	}catch(SQLException ex){
+		        		 Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.
+		        				 class.getName());
+		                 lgr.log(Level.SEVERE, ex.getMessage(), ex);        	
+		        	}
+		        }
+		return temp;
+		 
+    }
+    
+    public static boolean SearchFromConfirmed(String ID){
+    	Connection conn = null;
+		Statement st = null;
+		ResultSet rs = null;
+		Booking[] temp = new Booking[100]; 
+		
+		String cs = "jdbc:mysql://localhost:3306/RM";
+        String user = "sqluser2";
+        String password = "sqluserpw";
+        
+		 try{
+            	conn = DriverManager.getConnection(cs, user, password);
+            	st = conn.createStatement();
+            	
+            	String query = "Select * from Confirmed where BookingId = " + ID;
+            	rs = st.executeQuery(query);
+            	if (rs.next()) return true;
+            	return false;
+		 }catch (SQLException ex) {
+	            Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
+	            lgr.log(Level.SEVERE, ex.getMessage(), ex);
+		        }finally{
+		        	try{
+		        		if(st != null) st.close();
+		        		if(conn != null) conn.close();
+		        	}catch(SQLException ex){
+		        		 Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.
+		        				 class.getName());
+		                 lgr.log(Level.SEVERE, ex.getMessage(), ex);        	
+		        	}
+		        }
+		return false;
+    }
+    public static Booking[] getBookingsFromWaitlist(String Date)
+    		throws NumberFormatException, InvalidTimeException{
+    	Connection conn = null;
+		Statement st = null;
+		ResultSet rs = null;
+		Booking[] temp = new Booking[100]; 
+		
+		String cs = "jdbc:mysql://localhost:3306/RM";
+        String user = "sqluser2";
+        String password = "sqluserpw";
+        
+		 try{
+            	conn = DriverManager.getConnection(cs, user, password);
+            	st = conn.createStatement();
+            	
+            	String query = "Select * from Trial where Date = '" + Date +"' AND ARC_PermissioNReqd = 1" +
+            			" AND (CC_PermissionReqd = 1 OR CC_PERMISSIONReqd IS NULL)"; 
             	
             	rs = st.executeQuery(query);
             	if(rs==null) System.out.println("No return");
@@ -196,6 +312,7 @@ public class ModifyBookingsInDatabase {
 	    	}
 	    	return temp;
 	    }
+    
     
     public static void ConfirmBookings(int BookingID, String room) throws NumberFormatException, InvalidTimeException{
 	  Booking[] temp = SearchFromWaitlist("Id", Integer.toString(BookingID));
@@ -377,70 +494,70 @@ public class ModifyBookingsInDatabase {
 	      	return 1;
     }
     
-    public static int getNextBookingID() {
-    	Connection conn = null;
-		Statement st = null;
-		ResultSet rs = null;
-		  
-		String cs = "jdbc:mysql://localhost:3306/RM";
-	    String user = "sqluser2";
-	    String pwd = "sqluserpw";
-	    
-    try{
-    	conn = DriverManager.getConnection(cs, user, pwd);
-    	st = conn.createStatement();
-    	
-    	String query = "Select * from nextBookingID where SNo = 1";
-       	rs = st.executeQuery(query);
-    	rs.next();
-       	return Integer.parseInt(rs.getString("Number"));
-    }catch (SQLException ex) {
-	        Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
-	        lgr.log(Level.SEVERE, ex.getMessage(), ex);
-		  }finally{
-		    	try{
-		    		if(st != null) st.close();
-		    		if(conn != null) conn.close();
-		    	}catch(SQLException ex){
-		    		 Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
-		             lgr.log(Level.SEVERE, ex.getMessage(), ex);        	
-		    	}
-		    }
-	return 0;    	
-    }
-
-    private static void incrementNextBookingID() {
-    	int current = getNextBookingID();
-    	int next = current +1;
-    	
-    	 Connection conn = null;
-		 Statement st = null;
-		 
-		 String cs = "jdbc:mysql://localhost:3306/RM";
-	     String user = "sqluser2";
-	     String pwd = "sqluserpw";
-	     
-	     try{
-	      	conn = DriverManager.getConnection(cs, user, pwd);
-	      	st = conn.createStatement();
-	      	
-	      	String query = "update nextBookingID SET Number = " + Integer.toString(next) + " where SNo = 1";
-	      	st.execute(query);
-		    }catch (SQLException ex) {
-		        Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
-		        lgr.log(Level.SEVERE, ex.getMessage(), ex);
-		  }finally{
-		    	try{
-		    		if(st != null) st.close();
-		    		if(conn != null) conn.close();
-		    	}catch(SQLException ex){
-		    		 Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
-		             lgr.log(Level.SEVERE, ex.getMessage(), ex);        	
-		    	}
-		    }
-	      
-    }
-    
+//    public static int getNextBookingID() {
+//    	Connection conn = null;
+//		Statement st = null;
+//		ResultSet rs = null;
+//		  
+//		String cs = "jdbc:mysql://localhost:3306/RM";
+//	    String user = "sqluser2";
+//	    String pwd = "sqluserpw";
+//	    
+//    try{
+//    	conn = DriverManager.getConnection(cs, user, pwd);
+//    	st = conn.createStatement();
+//    	
+//    	String query = "Select * from nextBookingID where SNo = 1";
+//       	rs = st.executeQuery(query);
+//    	rs.next();
+//       	return Integer.parseInt(rs.getString("Number"));
+//    }catch (SQLException ex) {
+//	        Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
+//	        lgr.log(Level.SEVERE, ex.getMessage(), ex);
+//		  }finally{
+//		    	try{
+//		    		if(st != null) st.close();
+//		    		if(conn != null) conn.close();
+//		    	}catch(SQLException ex){
+//		    		 Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
+//		             lgr.log(Level.SEVERE, ex.getMessage(), ex);        	
+//		    	}
+//		    }
+//	return 0;    	
+//    }
+//
+//    private static void incrementNextBookingID() {
+//    	int current = getNextBookingID();
+//    	int next = current +1;
+//    	
+//    	 Connection conn = null;
+//		 Statement st = null;
+//		 
+//		 String cs = "jdbc:mysql://localhost:3306/RM";
+//	     String user = "sqluser2";
+//	     String pwd = "sqluserpw";
+//	     
+//	     try{
+//	      	conn = DriverManager.getConnection(cs, user, pwd);
+//	      	st = conn.createStatement();
+//	      	
+//	      	String query = "update nextBookingID SET Number = " + Integer.toString(next) + " where SNo = 1";
+//	      	st.execute(query);
+//		    }catch (SQLException ex) {
+//		        Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
+//		        lgr.log(Level.SEVERE, ex.getMessage(), ex);
+//		  }finally{
+//		    	try{
+//		    		if(st != null) st.close();
+//		    		if(conn != null) conn.close();
+//		    	}catch(SQLException ex){
+//		    		 Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
+//		             lgr.log(Level.SEVERE, ex.getMessage(), ex);        	
+//		    	}
+//		    }
+//	      
+//    }
+//    
     public static Classroom[] instantiateRooms(){
     	 Connection conn = null;
 		 Statement st = null;
@@ -467,6 +584,42 @@ public class ModifyBookingsInDatabase {
 		      	}
 		      	
 		      	return temp;
+	     }catch (SQLException ex) {
+		        Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
+		        lgr.log(Level.SEVERE, ex.getMessage(), ex);
+		  }finally{
+		    	try{
+		    		if(st != null) st.close();
+		    		if(conn != null) conn.close();
+		    	}catch(SQLException ex){
+		    		 Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
+		             lgr.log(Level.SEVERE, ex.getMessage(), ex);        	
+		    	}
+		    }
+		return temp;
+    }
+    
+    public static String[] getRoomNames(){
+    	 Connection conn = null;
+		 Statement st = null;
+		 ResultSet rs = null;
+		 String[] temp = new String[31];
+		 String cs = "jdbc:mysql://localhost:3306/RM";
+	     String user = "sqluser2";
+	     String pwd = "sqluserpw";
+	     
+	     try{
+		      	conn = DriverManager.getConnection(cs, user, pwd);
+		      	st = conn.createStatement();
+		      	
+		      	String query = "select * from Classrooms";
+		      	rs = st.executeQuery(query);
+		      	int i = 0;
+		      	while(rs.next()){		      	
+		      		String name = rs.getString("name");		  
+		      		temp[i++] = new String(name);
+		      		
+		      	}
 	     }catch (SQLException ex) {
 		        Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
 		        lgr.log(Level.SEVERE, ex.getMessage(), ex);
@@ -586,5 +739,47 @@ public class ModifyBookingsInDatabase {
 		    	}
 		    }
 			return -1;
+    }
+    
+    public static void checkRooms(){
+    	Connection conn = null;
+  	    Statement st = null;
+  	  
+  	    String cs = "jdbc:mysql://localhost:3306/RM";
+        String user = "sqluser2";
+        String password = "sqluserpw";
+        
+        System.out.println("The Rooms that are open are:");
+        try{
+        	conn = DriverManager.getConnection(cs, user, password);
+        	st = conn.createStatement();
+        	
+        	String query = "Select * From Classrooms Where Open = 1";
+        	ResultSet rs = st.executeQuery(query);
+        	while(rs.next()){
+        		System.out.println(rs.getString("name"));
+        	}
+        	
+        	st=conn.createStatement();
+        	System.out.println("The rooms that are closed are:");
+        	
+        	query = "Select * from Classrooms Where Open = 0";
+        	rs = st.executeQuery(query);
+        	
+        	while(rs.next()){
+        		System.out.println(rs.getString("name"));
+        	}
+	    }catch (SQLException ex) {
+	        Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
+	        lgr.log(Level.SEVERE, ex.getMessage(), ex);
+	    }finally{
+	    	try{
+	    		if(st != null) st.close();
+	    		if(conn != null) conn.close();
+	    	}catch(SQLException ex){
+	    		 Logger lgr = Logger.getLogger(ModifyBookingsInDatabase.class.getName());
+	             lgr.log(Level.SEVERE, ex.getMessage(), ex);        	
+	    	}
+	    }
     }
 }

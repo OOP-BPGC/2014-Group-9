@@ -23,6 +23,9 @@ public class Booking2 {
 	public boolean projectorRequired = false;
 	public String username = "noname";
 	
+	public Booking corrBooking = null;
+	public Classroom classroom = null;
+	
 	public void set(Booking booking){
 		id = booking.getBookingId();
 		privilege = booking.details.getPriority();
@@ -33,6 +36,7 @@ public class Booking2 {
 		reason = booking.details.getReason();
 //		projectorRequired =
 		username = booking.details.getUserID();
+		corrBooking = booking;
 	}
 	
 }
