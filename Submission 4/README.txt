@@ -64,7 +64,7 @@ Install ANT: https://ant.apache.org/manual/install.html#installing
 
 Executing program:
 This last step should be repeated each time that the program is required to run.
-
+On linux based systems, we have created a shortcut by which just typing <<./Program>> will run the Program.jar file
 
 Login Instructions:
 
