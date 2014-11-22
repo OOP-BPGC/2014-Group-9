@@ -24,6 +24,7 @@
         <mkdir dir="bin"/>
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="src">
+                <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
@@ -127,7 +128,6 @@
     </target>
     <target name="UserInterface">
         <java classname="RM.UserInterface" failonerror="true" fork="yes">
-            <jvmarg line="user123"/>
             <classpath refid="ResourceManagement.classpath"/>
         </java>
     </target>
