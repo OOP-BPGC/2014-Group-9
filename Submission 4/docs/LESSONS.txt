@@ -1,0 +1,16 @@
+a) Positives of your group
+	For most part of the project, everyone took their responsibility seriously. Once a task was assigned, most members ensured that the work was completed. Delays were inevitable, and often, the submissions were too close to the deadline.
+	Most members of the group also covered up for one another. No one shrugged  off any responsibility, and people worked a lot outside their assigned roles. This helped everyone in effectively managing other ongoing projects.
+	The team rarely had any disagreements, and the project changed its most basic principles even till the third formal submission, due to the multitude of ideas that kept pouring in as the code developed. A lot of changes was made from the developer point of view, and the code, in its final stage is a much simpler and intuitive software.
+
+
+b) Negatives of your group
+	The group, while had ideas of all sorts related to GUI and back-end, not all of them were actually considered from the point of implementation. The core ideas were tweaked around, like dismissing the need for a separate Database Class, not actually implementing an interface, reducing the overall size of the code, etc. But attention given to the user experience. was not adequate. And in the process, no one perfected the development of GUI. Secondly, a lot of the major judgements were made essentially by a  few people, and relayed on to the other members. This was a major cause of delays. 
+
+c) What would we do differently next time?
+    - Create a better GUI for the program.
+    - To implement the idea on a campus wide scale by creating a web portal or an android application.
+    - Try to expand the idea of "resource" management to cabs and other frequently used resources by students/staff/faculty on campus.
+	- Add additions to restrict booking only upto one month of the current date.
+
+

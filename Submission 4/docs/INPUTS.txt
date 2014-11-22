@@ -1,0 +1,52 @@
+Login to Authenticate: 
+Inputs- Username : String
+        Password : String
+Outputs - None
+
+Enter Choice In Main Menu
+Inputs - Enter Choice: String (1 digit integer)
+Output - None
+
+Process Wailist: 
+Inputs - Date : String (YYYY-MM-DD)
+Outputs - None
+
+Register New User:
+Inputs- Username : String
+        Password : String
+        Priority : String (1 digit integer <4)
+Outputs - None
+
+Close Room: 
+Inputs - Room : String (Valid Room Name)
+Output - 1: Close Room    2: Open Room
+        Input : Choice : String (1 or 2)
+        Output : None
+        
+Book Room: 
+Inputs - Date : String (YYYY-MM-DD)
+         Start Time : String (HH:MM)
+         End Time : String (HH:MM)
+         Room Size : String (Integer 1,2,3,4 or 5)
+         Reason : String 
+         Projector Reqd: String (Y or N)
+Output - Booking Id : Integer
+
+Cancel Room: 
+Inputs - Booking ID : String (Integer)
+         Valid      : String (Y or N)
+Outputs - "Success", "Booking ID does not correspond to this username"
+
+Check Status: 
+Input - Booking ID : String (Integer)
+Outputs - "Confirmed with Room No <   > " , "Booking still on waitlist" , "Booking rejected by In-Charge or invalid Booking ID"
+
+Check Availability: 
+Input - Date : String (YYYY-MM-DD)
+Outputs - Table of available rooms
+
+Check Pending Requests: 
+Input - None
+Output - Details of Booking if any
+        Input - Confirm/Deny : String [ Integer 1 or 2]
+        Output - None
